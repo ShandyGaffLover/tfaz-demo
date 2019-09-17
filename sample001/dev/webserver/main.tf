@@ -5,7 +5,7 @@ resource "azurerm_resource_group" "test" {
 }
 
 resource "azurerm_app_service_plan" "test" {
-  name                = "example-appserviceplan"
+  name                = "__server_name__"
   location            = "${azurerm_resource_group.test.location}"
   resource_group_name = "${azurerm_resource_group.test.name}"
   sku {
@@ -15,7 +15,7 @@ resource "azurerm_app_service_plan" "test" {
 }
 
 resource "azurerm_app_service" "test" {
-  name                = "example-app-service"
+  name                = "__server_name__"
   location            = "${azurerm_resource_group.test.location}"
   resource_group_name = "${azurerm_resource_group.test.name}"
   app_service_plan_id = "${azurerm_app_service_plan.test.id}"
