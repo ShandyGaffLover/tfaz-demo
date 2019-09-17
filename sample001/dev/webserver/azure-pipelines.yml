@@ -1,4 +1,5 @@
 variables:
+- group: tfaz-demo
 - name: source
   value: sample001/dev/webserver
 
