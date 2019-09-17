@@ -1,0 +1,74 @@
+parameters:
+  env: ''
+  subscription: ''
+  source: ''
+
+steps:
+- task: CopyFiles@2
+  displayName: 'Copy Terraform files to artifacts'
+  inputs:
+    SourceFolder: ${{ parameters.source}}
+    TargetFolder: '$(build.artifactstagingdirectory)/${{ parameters.source}}'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+
+- task: replacetokens@3
+  displayName: 'Replace token in Terraform Configure'
+  inputs:
+    targetFiles: '**/*.tf'
+    encoding: 'auto'
+    writeBOM: true
+    actionOnMissing: 'warn'
+    keepToken: false
+    tokenPrefix: '__'
+    tokenSuffix: '__'
+
+- task: AzureCLI@1
+  displayName: 'Define Terraform backend'
+  inputs:
+    azureSubscription: ${{ parameters.subscription }}
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      call az group create --name $(tfbackend_resource_group_name) --location japaneast
+
+      call az storage account create --name $(tfbackend_storage_account_name) --resource-group $(tfbackend_resource_group_name) --location japaneast --sku Standard_LRS
+
+      call az storage container create --name $(tfbackend_container_name) --account-name $(tfbackend_storage_account_name)
+
+- task: Terraform@2
+  displayName: 'Terraform init'
+  inputs:
+    TemplatePath: '${{ parameters.source}}'
+    Arguments: 'init'
+    InstallTerraform: true
+    UseAzureSub: true
+    ConnectedServiceNameSelector: 'ConnectedServiceNameARM'
+    ConnectedServiceNameARM: ${{ parameters.subscription }}
+    ManageState: true
+    SpecifyStorageAccount: true
+    StorageAccountResourceGroup: '$(tfbackend_resource_group_name)'
+    StorageAccountRM: '$(tfbackend_storage_account_name)'
+    StorageContainerName: '$(tfbackend_container_name)'
+
+- task: Terraform@2
+  displayName: 'Terraform plan'
+  inputs:
+    TemplatePath: '${{ parameters.source}}'
+    Arguments: 'plan'
+    InstallTerraform: true
+    UseAzureSub: true
+    ConnectedServiceNameSelector: 'ConnectedServiceNameARM'
+    ConnectedServiceNameARM: ${{ parameters.subscription }}
+    ManageState: false
+
+- task: Terraform@2
+  displayName: 'Terraform apply'
+  inputs:
+    TemplatePath: '${{ parameters.source}}'
+    Arguments: 'apply -auto-approve'
+    InstallTerraform: true
+    UseAzureSub: true
+    ConnectedServiceNameSelector: 'ConnectedServiceNameARM'
+    ConnectedServiceNameARM: ${{ parameters.subscription }}
+    ManageState: false

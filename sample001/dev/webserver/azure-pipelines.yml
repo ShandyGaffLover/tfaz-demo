@@ -1,0 +1,25 @@
+variables:
+- name: source
+  value: sample001/dev/webserver
+
+trigger:
+  branches:
+    include:
+    - master
+    - releases/*
+  paths:
+    include:
+    - sample001/dev/webserver/*
+    exclude:
+    - sample001/dev/webserver/README.md
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+steps:
+- template: ../../../templates/terraform-steps.yml
+  parameters:
+    env: dev
+    subscription: $(subscription)
+    source: $(source)
+
