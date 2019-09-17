@@ -7,7 +7,7 @@ resource "azurerm_sql_server" "test" {
   resource_group_name          = "${azurerm_resource_group.test.name}"
   location                     = "West US"
   version                      = "12.0"
-  administrator_login          = "admin"
+  administrator_login          = "__admin__"
   administrator_login_password = "__password__"
   lifecycle {
     ignore_changes = [
