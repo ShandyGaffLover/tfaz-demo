@@ -4,15 +4,6 @@ parameters:
   source: ''
 
 steps:
-- task: CopyFiles@2
-  displayName: 'Copy Terraform files to artifacts'
-  inputs:
-    SourceFolder: ${{ parameters.source}}
-    TargetFolder: '$(build.artifactstagingdirectory)/${{ parameters.source}}'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-
 - task: replacetokens@3
   displayName: 'Replace token in Terraform Configure'
   inputs:
